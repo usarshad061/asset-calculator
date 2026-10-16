@@ -88,7 +88,7 @@ button.reset{font:inherit;font-size:13px;font-weight:600;color:var(--blue);backg
 <div class="app">
   <div class="top">
     <div class="logo" aria-hidden="true">Rs</div>
-    <div><h1>Asset Value Calculator</h1><p>Check the extra asset needed when income falls short · v3</p></div>
+    <div><h1>Asset Value Calculator</h1><p>Check the extra asset needed when income falls short</p></div>
   </div>
 
   <div class="body">
@@ -207,7 +207,7 @@ function calc(){
   $("dp").placeholder=P?(unit==="pkr"?String(Math.round(P*.25)):"25"):"";
   let err="";
   if(P){if(!D)err="Please enter the downpayment.";else if(D<Math.round(P*.25)-0.5)err="Minimum 25% required.";else if(D>=P)err="Downpayment must be less than the EV price."}
-  $("dpErr").hidden=!err;$("dpErr").textContent=err;$("dp").classList.toggle("bad",!!err);
+  $("dpErr").hidden=!err;$("dpErr").textContent=err;$("dp").classList.toggle("bad",!!err&&D>0);
   const valid=P>0&&!err;$("outWrap").hidden=!valid;$("emptyBox").hidden=valid;
   document.querySelectorAll(".after").forEach(el=>{el.classList.toggle("locked",!valid);el.setAttribute("aria-disabled",!valid);el.querySelectorAll("input,select,button").forEach(c=>c.disabled=!valid)});
   if(!valid)return;
