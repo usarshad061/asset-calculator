@@ -12,17 +12,17 @@
 :root{
   --bg:#f3f5f9; --card:#ffffff; --ink:#132033; --muted:#6b7588; --line:#e3e8ef; --field:#ffffff; --chip:#eef1f6;
   --blue:#0a74ff; --blue-2:#0057d9; --blue-soft:#e8f1ff;
-  --ok:#14915a; --err:#dc2f2f; --ok-soft:#e5f6ed; --warn:#c2541b; --warn-soft:#fdeee4; --navy:#1b2b4b;
+  --ok:#14915a; --err:#dc2f2f; --err-soft:#fdecec; --ok-soft:#e5f6ed; --warn:#c2541b; --warn-soft:#fdeee4; --navy:#1b2b4b;
   --font:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0c111b; --card:#141b28; --ink:#e8edf6; --muted:#9aa5b8; --line:#253043; --field:#0f1622; --chip:#1c2537;
   --blue:#3d8bff; --blue-2:#1f6ae6; --blue-soft:#16264a;
-  --ok:#3fcf8a; --err:#ff6b6b; --ok-soft:#12301f; --warn:#f39a62; --warn-soft:#3a2416; --navy:#c9d6f2; color-scheme:dark}}
+  --ok:#3fcf8a; --err:#ff6b6b; --err-soft:#3a1a1c; --ok-soft:#12301f; --warn:#f39a62; --warn-soft:#3a2416; --navy:#c9d6f2; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0c111b; --card:#141b28; --ink:#e8edf6; --muted:#9aa5b8; --line:#253043; --field:#0f1622; --chip:#1c2537;
   --blue:#3d8bff; --blue-2:#1f6ae6; --blue-soft:#16264a;
-  --ok:#3fcf8a; --err:#ff6b6b; --ok-soft:#12301f; --warn:#f39a62; --warn-soft:#3a2416; --navy:#c9d6f2; color-scheme:dark}
+  --ok:#3fcf8a; --err:#ff6b6b; --err-soft:#3a1a1c; --ok-soft:#12301f; --warn:#f39a62; --warn-soft:#3a2416; --navy:#c9d6f2; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.5;
@@ -53,7 +53,9 @@ input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid 
 .tier.on{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 16px -8px var(--blue)}
 .tier.on b{color:#fff}
 .err{font-size:13.5px;font-weight:600;color:var(--err);margin:0}
-input.bad{border-color:var(--err)}
+input.bad{border-color:var(--err);background:var(--err-soft)}
+.locked{opacity:.45;pointer-events:none;user-select:none}
+input:disabled,select:disabled{cursor:not-allowed}
 .empty{border:1.5px dashed var(--line);border-radius:16px;padding:28px 22px;text-align:center;color:var(--muted);font-size:14px}
 .result{background:linear-gradient(160deg,var(--blue),var(--blue-2));color:#fff;border-radius:16px;padding:20px 20px 18px;text-align:center;display:flex;flex-direction:column;gap:4px}
 .result .k{font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;opacity:.9}
@@ -110,12 +112,12 @@ button.reset{font:inherit;font-size:13px;font-weight:600;color:var(--blue);backg
       <p class="hint" id="dpHint"></p>
     </div>
 
-    <div class="f">
+    <div class="f after">
       <label for="inc">Customer's Average Monthly Income</label>
       <input id="inc" inputmode="numeric" autocomplete="off" placeholder="PKR">
     </div>
 
-    <div class="f">
+    <div class="f after">
       <label for="atype">Asset Type</label>
       <select id="atype">
         <option value="smart">Smart card (car / bike)</option>
@@ -123,7 +125,7 @@ button.reset{font:inherit;font-size:13px;font-weight:600;color:var(--blue);backg
       </select>
     </div>
 
-    <div id="smartBox" class="f">
+    <div id="smartBox" class="f after">
       <div class="two">
         <div class="f"><label for="vPrice">Value at Time of Buying</label><input id="vPrice" inputmode="numeric" autocomplete="off" placeholder="PKR"></div>
         <div class="f"><label for="vDate">Date of Buying</label><input id="vDate" type="date"></div>
@@ -136,18 +138,18 @@ button.reset{font:inherit;font-size:13px;font-weight:600;color:var(--blue);backg
       <p class="hint" id="ageNote"></p>
     </div>
 
-    <div id="regBox" class="f" hidden>
+    <div id="regBox" class="f after" hidden>
       <label for="pValue">Property Value</label>
       <input id="pValue" inputmode="numeric" autocomplete="off" placeholder="PKR">
       <p class="hint">No valuation formula for land or house, so the value is counted in full.</p>
     </div>
 
-    <div class="f">
+    <div class="f after">
       <label for="req">Required Monthly Income</label>
       <input id="req" inputmode="numeric" autocomplete="off" placeholder="PKR, from the UW calculator">
     </div>
 
-    <div class="empty" id="emptyBox" hidden>Select a model and enter a valid downpayment (at least 25%) to see the required asset value.</div>
+    <div class="empty" id="emptyBox" hidden>Select a model and enter a valid downpayment (at least 25%) to continue.</div>
     <div id="outWrap" style="display:flex;flex-direction:column;gap:18px">
     <div class="result" aria-live="polite">
       <div class="k">Required Asset Value</div>
@@ -204,9 +206,11 @@ function calc(){
   $("dpHint").textContent=P?`Minimum downpayment: PKR ${fmt(P*.25)} (25%)`+(D?` · Entered: ${(D/P*100).toFixed(1)}%`:""):"";
   $("dp").placeholder=P?(unit==="pkr"?String(Math.round(P*.25)):"25"):"";
   let err="";
-  if(P){if(!D)err="Please enter the downpayment.";else if(D<Math.round(P*.25)-0.5)err=`Downpayment can't be less than PKR ${fmt(P*.25)} (25%).`;else if(D>=P)err="Downpayment must be less than the EV price."}
+  if(P){if(!D)err="Please enter the downpayment.";else if(D<Math.round(P*.25)-0.5)err="Minimum 25% required.";else if(D>=P)err="Downpayment must be less than the EV price."}
   $("dpErr").hidden=!err;$("dpErr").textContent=err;$("dp").classList.toggle("bad",!!err);
   const valid=P>0&&!err;$("outWrap").hidden=!valid;$("emptyBox").hidden=valid;
+  document.querySelectorAll(".after").forEach(el=>{el.classList.toggle("locked",!valid);el.setAttribute("aria-disabled",!valid);el.querySelectorAll("input,select,button").forEach(c=>c.disabled=!valid)});
+  if(!valid)return;
   const fin=Math.max(0,P-D),gap=R?Math.max(0,1-I/R):0,need=P&&R?fin*gap:0;
   $("outReq").innerHTML=pkr(need);
   $("needNote").textContent=P&&R?`${(gap*100).toFixed(1)}% of PKR ${fmt(fin)} financed`:" ";
